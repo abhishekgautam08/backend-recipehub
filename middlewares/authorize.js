@@ -15,9 +15,7 @@ const Errors = {
   },
 };
 
-const setAllowRoles = (req, allowedRoles) => {
-  req.allowedRoles = allowedRoles;
-};
+
 
 /**
  * Middleware to validate logged in user
@@ -34,19 +32,14 @@ const authorizeUser = (req, res, next) => {
     let decoded;
     try {
       decoded = verifyJwtToken(token);
-      console.log({ decoded });
     } catch (error) {
       console.log(error);
 
       throw Errors.invalidToken;
     }
 
-    if (req.allowedRoles && !req.allowedRoles.includes(decoded.role)) {
-      throw Errors.unAuthorizedUser;
-    }
 
     req.user = decoded;
-console.log(req.user);
 console.log(decoded);
     next();
   } catch (error) {
@@ -57,6 +50,6 @@ console.log(decoded);
 };
 
 module.exports = {
-    authorizeUser,
-    setAllowRoles
+    authorizeUser
+    
 }

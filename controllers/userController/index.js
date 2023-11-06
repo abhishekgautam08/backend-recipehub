@@ -7,6 +7,7 @@ const { User } = require("../../database/models/User");
 const signupUserController = async (req, res) => {
   try {
     const { email, name,password } = req.body;
+  
     const user = await User.findOne({ email }).lean().exec();
 
     if (user) {
@@ -61,7 +62,7 @@ const loginUserController = async (req, res) => {
     const payload = {
       id: user._id,
       email: user.email,
-      // name:user.name
+      name:user.name
     };
 
     const token = generateJwtToken(payload);

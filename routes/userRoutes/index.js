@@ -9,7 +9,7 @@ const {
   
   signupUserController,
 } = require("../../controllers/userController");
-const { authorizeUser, setAllowRoles } = require("../../middlewares/authorize");
+const { authorizeUser } = require("../../middlewares/authorize");
 
 const router = Router();
 
