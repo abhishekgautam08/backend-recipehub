@@ -3,16 +3,24 @@ const { Recipe, recipeStatus } = require("../../database/models/Recipe");
 
 const getRecipesController = async (req, res, next) => {
   try {
-    const baseURL = `${process.env.RECIPES_API_URL}/complexSearch?apiKey=${process.env.RECIPES_API_KEY}&cuisine`;
+    const baseURL = `${process.env.RECIPES_API_URL}/complexSearch`;
     const cusineQuery =
       Object.keys(req.query).length > 0
         ? req.query.cuisine
           ? req.query.cuisine
           : ""
         : "";
+    const perPage = req.query.perPage;
+    const offset = req.query.offset;
 
-    const url = `${baseURL}=${cusineQuery}&number=20`;
-    const response = await axios.get(url);
+    const response = await axios.get(baseURL, {
+      params: {
+        number: perPage,
+        offset,
+        cuisine: cusineQuery,
+        apiKey: `${process.env.RECIPES_API_KEY}`,
+      },
+    });
 
     res.status(200).json(response.data.results);
   } catch (err) {
@@ -44,7 +52,8 @@ const getRecipeSave = async (req, res, next) => {
     const loggedInUser = req.user;
 
     const existingRecipe = await Recipe.findOne({
-      recipeId: recepieDetail.id, // Using _id field to search
+      recipeId: recepieDetail.id,
+      userId: loggedInUser.id,
     })
       .lean()
       .exec();
@@ -76,12 +85,11 @@ const getSaveRecipe = async (req, res, next) => {
     const loggedInUser = req.user;
 
     const userRecipes = await Recipe.find({
-      recipeId: loggedInUser.id,
+      userId: loggedInUser.id,
       status: recipeStatus.show,
     })
       .lean()
       .exec();
-
 
     if (userRecipes) {
       return res.status(200).json(userRecipes);
@@ -98,23 +106,20 @@ const getSaveRecipe = async (req, res, next) => {
 };
 const getRemoveRecipe = async (req, res, next) => {
   try {
-    const {id} = req.params;
+    const { id } = req.params;
     const userRecipesId = await Recipe.findOneAndUpdate(
       { recipeId: id },
       { status: recipeStatus.hide },
       { new: true }
-    ).lean()
+    )
+      .lean()
       .exec();
 
-
-     if (userRecipesId) {
-       res
-         .status(200)
-         .json({ message: "Your Recipe is Removed From Wishlist" });
-     } else {
-       res.status(404).json({ message: "No records found" });
-     }
-
+    if (userRecipesId) {
+      res.status(200).json({ message: "Your Recipe is Removed From Wishlist" });
+    } else {
+      res.status(404).json({ message: "No records found" });
+    }
   } catch (err) {
     console.error(
       "Error in getting recepie details: Stacktrace: ",
